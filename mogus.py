@@ -1,6 +1,6 @@
 from flask import Flask, send_file, request, redirect
 from PIL import Image, ImageDraw, ImageFont
-from random import randint
+from random import randint, choice
 from io import BytesIO
 
 import warnings
@@ -9,13 +9,21 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
+links = [
+        "https://www.youtube.com/watch?v=grd-K33tOSM",
+        "https://www.youtube.com/watch?v=NOZONW-UK0w",
+        "https://www.youtube.com/watch?v=ifB662xOZTw",
+        "https://www.youtube.com/watch?v=EZEfN5z8Mlg",
+        "https://www.youtube.com/watch?v=CuxAT5B-iCw"
+]
+
 def gen_img() -> Image:
-    msg1 = "Ahnaf asks"
-    msg2 = "What number is this?"
+    msg1 = "Ahnaf (Mog33) asks"
+    msg2 = "What number u seeing?"
     msg3 = str(randint(0, 100))
 
-    W, H = (400, 400)
     img = Image.open("./mogus.jpg")
+    W, H = img.size
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype('JetBrains Mono Medium Nerd Font Complete.ttf', 30)
 
@@ -33,8 +41,10 @@ def gen_img() -> Image:
 
 @app.route("/amogus.png")
 def amogus():
-    if not 'Intel Mac OS X' in request.headers.get('User-Agent'):
-        return redirect('https://www.youtube.com/watch?v=grd-K33tOSM', code=302)
+    agent = request.headers.get('User-Agent')
+    if 'Intel Mac OS X' not in agent and 'Discord' not in agent:
+       return redirect(choice(links), code=302)
+
     img = gen_img()
     bio = BytesIO()
     img.save(bio, 'JPEG', quality=70)
