@@ -1,9 +1,10 @@
-from flask import Flask, send_file, request, redirect
+from flask import Flask, send_file, request, redirect, abort
 from PIL import Image, ImageDraw, ImageFont
 from random import randint, choice
 from io import BytesIO
 
 import warnings
+import os.path
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -23,15 +24,15 @@ redirect_links = [
     "https://www.youtube.com/watch?v=Jrg9KxGNeJY",
     "https://www.youtube.com/watch?v=Jp5U50kzgIk",
 ]
-agent_list = ["Intel Mac OS X 11.6; rv:92.0", "Discord", "curl"]
+agent_list = ["intel Mac OS X 11.6; rv:92.0", "discord", "curl"]
 
 
-def gen_img() -> Image:
-    msg1 = "Ahnaf (Mog33) asks"
+def gen_img(file_name: str) -> Image:
+    msg1 = "Mog33 asks"
     msg2 = "What number u seeing?"
     msg3 = str(randint(0, 100))
 
-    img = Image.open("./mogus.jpg")
+    img = Image.open(file_name)
     W, H = img.size
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("JetBrains Mono Medium Nerd Font Complete.ttf", 30)
@@ -57,19 +58,25 @@ def gen_img() -> Image:
     return img
 
 
-@app.route("/amogus")
-def amogus_root():
-    return redirect("/amogus.png")
-
-
-@app.route("/amogus.png")
-def amogus():
+@app.route("/tantei.png")
+def tantei_troll():
     agent = request.headers.get("User-Agent")
-    if not any(x in agent for x in agent_list):
-        # return redirect(choice(links), code=302)
+    if not any(x.lower() in agent.lower() for x in agent_list):
+        return redirect(choice(redirect_links), code=302)
+    return send_file(f"images/tantei/{randint(1, 3)}.jpg", mimetype="image/jpeg")
+
+
+@app.route("/<string:image_name>.png")
+def image_troll(image_name):
+    file_name = f"images/{image_name}.jpg"
+    if not os.path.isfile(file_name):
+        abort(404)
+
+    agent = request.headers.get("User-Agent")
+    if not any(x.lower() in agent.lower() for x in agent_list):
         return redirect(choice(redirect_links), code=302)
 
-    img = gen_img()
+    img = gen_img(file_name)
     bio = BytesIO()
     img.save(bio, "JPEG", quality=70)
     bio.seek(0)
@@ -77,4 +84,4 @@ def amogus():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(port=8080, debug=True)
