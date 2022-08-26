@@ -58,16 +58,22 @@ def gen_img(file_name: str) -> Image:
     return img
 
 
-@app.route("/tantei.png")
-def tantei_troll():
+@app.route("/img/<string:folder_name>.png")
+def multi_image_troll(folder_name):
+    """Sends a random image from a sub-folder in 'images' folder"""
     agent = request.headers.get("User-Agent")
     if not any(x.lower() in agent.lower() for x in agent_list):
         return redirect(choice(redirect_links), code=302)
-    return send_file(f"images/tantei/{randint(1, 3)}.jpg", mimetype="image/jpeg")
+
+    if not os.path.isdir(f"./images/{folder_name}"):
+        abort(404)
+
+    return send_file(f"images/{folder_name}/{randint(1, 3)}.jpg", mimetype="image/jpeg")
 
 
 @app.route("/<string:image_name>.png")
-def image_troll(image_name):
+def number_image_troll(image_name):
+    """Generates an image with a random number from all images in 'images' folder"""
     file_name = f"images/{image_name}.jpg"
     if not os.path.isfile(file_name):
         abort(404)
